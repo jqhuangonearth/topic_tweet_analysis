@@ -3,10 +3,11 @@ import cjson
 import json
 import gzip
 
-APP_CONSUMER_KEY = "Qy4ttRIKZQyjpruGjsGbQ"
-APP_CONSUMER_SECRET = "2yuAz0jm33Jk1ZV7PI4Dyt25OOXQHmmsZOpMgxtuQlE"
-ACCESS_TOKEN = "1260900631-i50ZUCLjtrTihD7ZyBJetfUd8rqwiQ5bTPBZGnx"
-ACCESS_SECRET = "4XsY48pLU3K83hO4FoKQmSmlbvzksQZ4X9bjCwvLA"
+APP_CONSUMER_KEY = "#"
+APP_CONSUMER_SECRET = "#"
+ACCESS_TOKEN = "1260900631-#"
+ACCESS_SECRET = "#"
+
 
 def read_user_ids(filename):
     in_file = open(filename, 'r')
@@ -18,19 +19,19 @@ def read_user_ids(filename):
         user_ids.append(data[user]["id"])
     return user_ids
 
-def get_user_followers(users):
+def get_user_followers(users, COUNT):
     access_twitter_api = ata.Main(APP_CONSUMER_KEY, APP_CONSUMER_SECRET)
     f_failed = open("../social_graph/failed_trails/userList_crawlfollowers.txt","w")
     # https://api.twitter.com/1.1/friends/ids.json?cursor=-1&screen_name=sitestreams&count=5000
     URL = "https://api.twitter.com/1.1/followers/ids.json"
     for i in range(len(users)):
-        print "%d: " %i, users[i]
+        print "%d: " %(i+COUNT), users[i]
         dict_followers = {}
         list_followers = []
         cursor = -1
         f_write = gzip.open("../social_graph/user_followers.json.gz","a")
         while cursor != 0:
-            params = "cursor=%s&user_id=%s&count=300" %(str(cursor), str(users[i]))
+            params = "cursor=%s&user_id=%s&count=150" %(str(cursor), str(users[i]))
             try:
                 content = access_twitter_api.request(URL,
                                                      params,
@@ -64,7 +65,9 @@ def output_user_files(user_profiles, filename):
 
 def main():
     users = read_user_ids("../user_dic/user_dic_09_wids.json")
-    get_user_followers(users)
+    user_truncated = users[len(users)/2:len(users)]
+    COUNT = len(users) - len(user_truncated)
+    get_user_followers(user_truncated, COUNT)
     #output_user_files(user_followers, "../user_data/user_followers.json")
     
 if __name__ == "__main__":

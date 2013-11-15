@@ -2,11 +2,13 @@ import ata
 import cjson
 import json
 import gzip
+import threading
 
-APP_CONSUMER_KEY = "lZn66eD0c3dmkAq3bTL2Tg"
-APP_CONSUMER_SECRET = "LOTtjEgFJY8bpsNeA7hzDjyHtgoFn2ir0o1sqUUt8zk"
-ACCESS_TOKEN = "1260900631-3N7q5aSs9FgJxC3gwML0aRkQWiB4bTxuXzUYvjI"
-ACCESS_SECRET = "x0DsZIvOX08AIwPLev4KyphulqI9n7HphlT0BDnYI"
+APP_CONSUMER_KEY = "#"
+APP_CONSUMER_SECRET = "#"
+ACCESS_TOKEN = "1260900631-#"
+ACCESS_SECRET = "#"
+
 
 def read_user_ids(filename):
     in_file = open(filename, 'r')
@@ -18,19 +20,20 @@ def read_user_ids(filename):
         user_ids.append(data[user]["id"])
     return user_ids
 
-def get_user_friends(users):
+
+def get_user_friends(users, COUNT):
     access_twitter_api = ata.Main(APP_CONSUMER_KEY, APP_CONSUMER_SECRET)
     f_failed = open("../social_graph/failed_trails/userList_crawlfriends.txt","w")
     # https://api.twitter.com/1.1/followers/ids.json?cursor=-1&screen_name=sitestreams&count=5000
     URL = "https://api.twitter.com/1.1/friends/ids.json"
     for i in range(len(users)):
-        print "%d: " %i, users[i]
+        print "%d: " %(i+COUNT), users[i]
         list_friends = []
         dict_friends = {}
         cursor = -1
-        f_write = gzip.open("../social_graph/user_friends.json.gz","a")
+        f_write = gzip.open("../social_graph/user_friends_09.json.gz","a")
         while cursor != 0:
-            params = "cursor=%s&user_id=%s&count=300" %(str(cursor), str(users[i]))
+            params = "cursor=%s&user_id=%s&count=5000" %(str(cursor), str(users[i]))
             try:
                 content = access_twitter_api.request(URL,
                                                      params,
@@ -49,6 +52,7 @@ def get_user_friends(users):
                 f_failed.write(str(users[i])+"\n")
                 break
         if len(list_friends) != 0:
+            
             dict_friends.update({str(users[i]):list_friends})
             f_write.write(cjson.encode(dict_friends)+"\n")
         f_write.close()
@@ -64,7 +68,12 @@ def output_user_files(user_profiles, filename):
 
 def main():
     users = read_user_ids("../user_dic/user_dic_09_wids.json")
-    get_user_friends(users)
+    user_truncated1 = users[0:len(users)/4]
+    #user_truncated2 = users[len(users)/4:len(users)/2]
+    #user_truncated3 = users[len(users)/2:3*len(users)/4]
+    #user_truncated4 = users[3*len(users)/4:len(users)]
+    COUNT = len(users) - len(user_truncated1)
+    get_user_friends(user_truncated1, COUNT)
     #output_user_files(user_friends, "../user_data/user_friends.json") 
 
 if __name__ == "__main__":
