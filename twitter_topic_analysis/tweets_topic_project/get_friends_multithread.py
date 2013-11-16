@@ -1,6 +1,5 @@
 import ata
 import cjson
-import json
 import gzip
 import threading
 
@@ -17,11 +16,31 @@ auth_keys = [["#",
 ["#",
 "#",
 "1260900631-#",
-"#"],
-
+"3"],
+             
 ["#",
 "#",
 "1260900631-#",
+"#"],
+# new api keys
+["#",
+"#",
+"1657806565-#",
+"#"],
+             
+["#",
+"#",
+"1657806565-#",
+"#"],
+             
+["#",
+"#",
+"1657806565-#",
+"#"],
+             
+["#",
+"#",
+"1657806565-#",
 "#"]]
 
 class get_friends(threading.Thread):
@@ -61,7 +80,7 @@ class get_friends(threading.Thread):
                     break
             if len(list_friends) != 0:
                 self.lock.acquire()
-                f_write = gzip.open("../social_graph/user_friends_09.json.gz","a")
+                f_write = gzip.open("../social_graph/user_friends_09_2.json.gz","a")
                 dict_friends.update({str(self.users[i]):list_friends})
                 f_write.write(cjson.encode(dict_friends)+"\n")
                 f_write.close()
@@ -80,16 +99,15 @@ def read_user_ids(filename):
 def main():
     users = read_user_ids("../user_dic/user_dic_09_wids.json")
     lock = threading.Lock()
-    user_truncated1 = users[0:len(users)/4]
-    user_truncated2 = users[len(users)/4:len(users)/2]
-    user_truncated3 = users[len(users)/2:3*len(users)/4]
-    user_truncated4 = users[3*len(users)/4:len(users)]
-
-    get_friends(user_truncated1, auth_keys[0], lock, "thread-" + str(1)).start()
-    get_friends(user_truncated2, auth_keys[1], lock, "thread-" + str(2)).start()
-    get_friends(user_truncated3, auth_keys[2], lock, "thread-" + str(3)).start()
-    get_friends(user_truncated4, auth_keys[3], lock, "thread-" + str(4)).start()
-    
+    user_truncated1 = users[len(users)/8+500:len(users)/4]
+    user_truncated2 = users[3*len(users)/8+500:len(users)/2]
+    user_truncated3 = users[5*len(users)/8+500:3*len(users)/4]
+    user_truncated4 = users[7*len(users)/8+500:len(users)]
+    print len(user_truncated1), len(user_truncated2), len(user_truncated3), len(user_truncated4)
+    get_friends(user_truncated1, auth_keys[4], lock, "thread-" + str(1)).start()
+    get_friends(user_truncated2, auth_keys[5], lock, "thread-" + str(2)).start()
+    get_friends(user_truncated3, auth_keys[6], lock, "thread-" + str(3)).start()
+    get_friends(user_truncated4, auth_keys[7], lock, "thread-" + str(4)).start()
     #output_user_files(user_friends, "../user_data/user_friends.json") 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ for example, learn the distribution of topics, learn the temporal distribution
 of topics, and learn the geo distribution of topics
 @author: Bolun Huang
 """
-
+import nltk
 import cjson
 
 class topic:
@@ -16,6 +16,7 @@ class topic:
         self.user_dic = cjson.decode(f.read())
         f.close()
         print len(self.user_dic)
+        print nltk.corpus.stopwords.words('english')
         
 def main():
     mytopic = topic()

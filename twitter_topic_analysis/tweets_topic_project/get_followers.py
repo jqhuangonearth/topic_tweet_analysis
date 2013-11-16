@@ -2,7 +2,12 @@ import ata
 import cjson
 import json
 import gzip
-
+"""
+APP_CONSUMER_KEY = "#"
+APP_CONSUMER_SECRET = "#"
+ACCESS_TOKEN = "1260900631-#"
+ACCESS_SECRET = "#"
+"""
 APP_CONSUMER_KEY = "#"
 APP_CONSUMER_SECRET = "#"
 ACCESS_TOKEN = "1260900631-#"

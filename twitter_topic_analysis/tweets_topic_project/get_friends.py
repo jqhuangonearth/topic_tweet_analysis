@@ -2,13 +2,17 @@ import ata
 import cjson
 import json
 import gzip
-import threading
 
+"""
 APP_CONSUMER_KEY = "#"
 APP_CONSUMER_SECRET = "#"
 ACCESS_TOKEN = "1260900631-#"
 ACCESS_SECRET = "#"
-
+"""
+APP_CONSUMER_KEY = "#"
+APP_CONSUMER_SECRET = "#"
+ACCESS_TOKEN = "1260900631-#"
+ACCESS_SECRET = "#"
 
 def read_user_ids(filename):
     in_file = open(filename, 'r')
@@ -19,7 +23,6 @@ def read_user_ids(filename):
     for user in data:
         user_ids.append(data[user]["id"])
     return user_ids
-
 
 def get_user_friends(users, COUNT):
     access_twitter_api = ata.Main(APP_CONSUMER_KEY, APP_CONSUMER_SECRET)
