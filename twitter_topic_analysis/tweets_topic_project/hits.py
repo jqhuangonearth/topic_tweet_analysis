@@ -178,8 +178,9 @@ def main():
     
     ht.G = G
     hub_auth = ht.run_hits()
-    print "hub_scores ", hub_auth[0]
-    print "auth_scores", hub_auth[1]
+    print sorted(hub_auth[1].iteritems(), key=lambda asd:asd[1], reverse = True)
+    #print "hub_scores ", hub_auth[0]
+    #print "auth_scores", hub_auth[1]
     
     #draw_graph(G)
     

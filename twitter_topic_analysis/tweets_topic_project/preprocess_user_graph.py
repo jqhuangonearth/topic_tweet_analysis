@@ -20,7 +20,7 @@ class prepro:
         fout.close()
         
     def get_user_followship(self):
-        f = open("D:\PythonWorkspace\user_friends_09_2.json", "r")
+        f = open("D:\PythonWorkspace\user_friends_09.json", "r")
         fout = open("D:\PythonWorkspace\user_edge.json", "w")
         
         for line in f:
