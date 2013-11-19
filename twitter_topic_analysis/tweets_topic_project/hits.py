@@ -47,16 +47,8 @@ def hits(graph, root_set=[], max_iterations=100, min_delta=0.0001):
         base_set = set(base_set)
 
     auth = dict.fromkeys(base_set, 1)
-    print auth
     hub = dict.fromkeys(base_set, 1)
-    print hub
     
-    def normalize(dictionary):
-        """ Normalize the values of a dictionary to sum up to 1. """
-        norm = sum((dictionary[p] for p in dictionary))
-
-        return {k: v / float(norm) for (k, v) in dictionary.items()}
-
     i = 0
     for i in range(max_iterations):
         for p in base_set:
@@ -80,6 +72,16 @@ def hits(graph, root_set=[], max_iterations=100, min_delta=0.0001):
             return (hub, auth)
 
     return (hub, auth)
+
+
+def normalize(dictionary):
+    """ Normalize the values of a dictionary to sum up to 1. """
+    norm = sum((dictionary[p] for p in dictionary))
+    if norm!=0:
+        return {k: (v / float(norm))*100000 for (k, v) in dictionary.items()}
+    else:
+        return {k: v for (k, v) in dictionary.items()}
+
 
 
 def draw_graph(G):
@@ -114,6 +116,8 @@ class hits_test():
 def main():
     ht = hits_test()
     G = nx.DiGraph()
+    
+    '''
     G.add_node(1)
     G.add_node(2)
     G.add_node(3)
@@ -146,23 +150,38 @@ def main():
     G.add_edge(7,3)
     G.add_edge(7,8)
     #G.add_edge(8,4)
+    '''
     
-    print G.nodes()
+    fr = open("D:\PythonWorkspace\user_id.txt", "r")
+    fr2 = open("D:\PythonWorkspace\user_edge.txt", "r")
     
-    for i in G.in_degree_iter(2):
-        print i
-    for o in G.out_degree_iter(2):
-        print o
+    for i in fr:
+        G.add_node(int(i))
+    
+    for j in fr2:
+        tmp = j.split(' ')
+        G.add_edge(int(tmp[0]), int(tmp[1]))
+    
+    fr.close()
+    fr2.close()
+    
+    
+    #print G.nodes()
+    
+    #for i in G.in_degree_iter(2):
+    #    print i
+    #for o in G.out_degree_iter(2):
+    #    print o
         
-    print G.in_edges(2)
-    print G.out_edges(2)
+    #print G.in_edges(2)
+    #print G.out_edges(2)
     
     ht.G = G
     hub_auth = ht.run_hits()
     print "hub_scores ", hub_auth[0]
     print "auth_scores", hub_auth[1]
     
-    draw_graph(G)
+    #draw_graph(G)
     
 if __name__ == "__main__":
     main()
