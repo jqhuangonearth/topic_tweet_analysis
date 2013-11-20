@@ -11,11 +11,13 @@ import os
 import gzip
 import json
 import time
-import util.stats as stats
+import shutil
+#import util.stats as stats
 
 TRUNK_SIZE = 3000
 DIR_T = "/home/bolun/user_tweets09/"
 DIR_O = "/home/bolun/terms_vector09/"
+DIR_R = "/home/bolun/terms_vector09_reduced/"
 
 class topic:
     def __init__(self):
@@ -222,15 +224,14 @@ class topic:
             term_dic = cjson.decode(line)
         f.close()
         
-        hist = stats.histogram()
-        
+        #hist = stats.histogram()
         for term in term_dic:
             if term_dic[term] > 30 and term_dic[term] < 165500:
                 term_dic_reduced.update({term:term_dic[term]})
         
         for term in term_dic_reduced:
             term_list.append([term, term_dic_reduced[term]])
-            hist.add(term_dic_reduced[term])
+            #hist.add(term_dic_reduced[term])
         
         minc = min(term_dic_reduced.values())
         maxc = max(term_dic_reduced.values())
@@ -250,15 +251,34 @@ class topic:
         json.dump(term_dic, f)
         f.close()
         
+    def cp_reduced_term_vector(self):
+        f = open("../term_dic/term_dic_09_reduced.json","r")
+        term_dic_reduced = cjson.decode(f.readline(), )
+        f.close()
+        count = 0
+        failed_count = 0
+        for term in term_dic_reduced:
+            path = os.path.join(DIR_O, term+".json.gz")
+            if (os.path.isfile(path)):
+                shutil.copy2(path, DIR_R)
+            else:
+                print "file not found: ", term
+                failed_count += 1
+            count += 1
+            if count%5000 == 0:
+                print "%d copied..." %count
+        print "total ", count
+        print "failed", failed_count
         
 def main():
     mytopic = topic()
-    mytopic.read_user_list("../user_dic/user_dic_09_wids.json")
+    #mytopic.read_user_list("../user_dic/user_dic_09_wids.json")
     #print mytopic.process_sentence("#HonestyHour I'd rather not be around highly emotional people."
     #+" I didn't come from a family how wore their emotions on there's sleeves. @FredyGarcia10 "
     #+"@thatchick_macy http:\\/\\/t.co\\/DmFH97GNYy")
-    mytopic.generate_term_vector()
+    #mytopic.generate_term_vector()
     #mytopic.read_term_file("../term_dic/term_dic_09.json")
+    mytopic.cp_reduced_term_vector()
     
 if __name__ == "__main__":
     main()
