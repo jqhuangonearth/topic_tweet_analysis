@@ -1,5 +1,8 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import cjson
+import gzip
+import json
 
 """
 Hyperlink-Included Topic Search implementation
@@ -47,16 +50,8 @@ def hits(graph, root_set=[], max_iterations=100, min_delta=0.0001):
         base_set = set(base_set)
 
     auth = dict.fromkeys(base_set, 1)
-    print auth
     hub = dict.fromkeys(base_set, 1)
-    print hub
     
-    def normalize(dictionary):
-        """ Normalize the values of a dictionary to sum up to 1. """
-        norm = sum((dictionary[p] for p in dictionary))
-
-        return {k: v / float(norm) for (k, v) in dictionary.items()}
-
     i = 0
     for i in range(max_iterations):
         for p in base_set:
@@ -69,7 +64,7 @@ def hits(graph, root_set=[], max_iterations=100, min_delta=0.0001):
         old_hub = dict()
         for p in base_set:
             old_hub[p] = hub[p]
-            auth_list = [auth.get(r[0]) for r in graph.out_edges(p)]
+            auth_list = [auth.get(r[1]) for r in graph.out_edges(p)]
             #print auth_list
             hub[p] = sum(auth_list)
 
@@ -78,9 +73,77 @@ def hits(graph, root_set=[], max_iterations=100, min_delta=0.0001):
         delta = sum((abs(old_hub[k] - hub[k]) for k in hub))
         if delta <= min_delta:
             return (hub, auth)
-
     return (hub, auth)
 
+
+def normalize(dictionary):
+    length = len(dictionary)
+    """ Normalize the values of a dictionary to sum up to 1. """
+    norm = sum((dictionary[p] for p in dictionary))
+    if norm!=0:
+        return {k: (v / float(norm))*length for (k, v) in dictionary.items()}
+    else:
+        return {k: v for (k, v) in dictionary.items()}
+
+def pre_process():
+    """
+    Dump user friends for whole month for September
+    """
+    user_friends = {}
+    f = gzip.open("../social_graph/user_friends_09.json.gz", "r")
+    for line in f:
+        data = cjson.decode(line)
+        for key in data:
+            if not user_friends.has_key(key):
+                user_friends.update({key : data[key]})
+            else:
+                pass
+    f.close()
+    f = gzip.open("../social_graph/user_friends_09_2.json.gz", "r")
+    for line in f:
+        data = cjson.decode(line)
+        for key in data:
+            if not user_friends.has_key(key):
+                user_friends.update({key : data[key]})
+            else:
+                pass
+    f.close()
+    f = gzip.open("../social_graph/user_friends_09_total.json.gz","w")
+    json.dump(user_friends, f)
+    f.close()
+
+def process_user_graph():
+    f = open("../user_dic/user_dic_09_wids_2.json","r")
+    user_dic = cjson.decode(f.readline())
+    user_ids = set()
+    for user in user_dic:
+        user_ids.add(str(user_dic[user]["id"]))
+    print len(user_dic)
+    print len(user_ids)
+    
+    f.close()
+    fo = open("../social_graph/graph_reduced.txt","w")
+    fo.write("#nodes\n")
+    #for user in user_dic:
+    #    fo.write(str(user_dic[user]["id"])+"\n")
+    for user in user_ids:
+        fo.write(user+"\n")
+    
+    fo.write("#edges\n")
+    f = gzip.open("../social_graph/user_friends_09_total.json.gz")
+    user_friends = cjson.decode(f.readline())
+    print len(user_friends)
+
+    for user in user_friends:
+        if user in user_ids:
+            for friend in user_friends[user]:
+                if str(friend) in user_ids:
+                    fo.write(user+" "+str(friend)+"\n")
+                else:
+                    pass
+    f.close()
+    fo.close()
+    
 
 def draw_graph(G):
     """
@@ -112,8 +175,13 @@ class hits_test():
         return hits(self.G)
         
 def main():
+    #pre_process()
+    #process_user_graph()
+    #exit(0)
     ht = hits_test()
     G = nx.DiGraph()
+    
+    """
     G.add_node(1)
     G.add_node(2)
     G.add_node(3)
@@ -146,23 +214,41 @@ def main():
     G.add_edge(7,3)
     G.add_edge(7,8)
     #G.add_edge(8,4)
+    """
     
-    print G.nodes()
-    
-    for i in G.in_degree_iter(2):
-        print i
-    for o in G.out_degree_iter(2):
-        print o
-        
-    print G.in_edges(2)
-    print G.out_edges(2)
-    
-    ht.G = G
+    fg = open("../social_graph/graph_reduced.txt", "r")
+    flag = 0
+    node_list = []
+    edge_list = []
+    for line in fg:
+        if flag == 1:
+            try:
+                node_list.append(str(int(line)))
+            except:
+                pass
+        elif flag == 2:
+            try:
+                edge = line.split(" ")
+                edge_list.append([str(int(edge[0])), str(int(edge[1]))])
+            except:
+                pass
+        if line.startswith("#nodes"):
+            flag = 1
+        elif line.startswith("#edges"):
+            flag = 2
+    fg.close()
+    print len(node_list), len(edge_list)
+    ht.construct_graph(node_list, edge_list)
     hub_auth = ht.run_hits()
-    print "hub_scores ", hub_auth[0]
-    print "auth_scores", hub_auth[1]
+    auth_score = hub_auth[1]
+    f = open("../social_graph/authorities.json","w")
+    json.dump(auth_score, f)
+    f.close()
+    #print sorted(hub_auth[1].iteritems(), key=lambda asd:asd[1], reverse = False)
+    #print "hub_scores ", hub_auth[0]
+    #print "auth_scores", hub_auth[1]
     
-    draw_graph(G)
+    #draw_graph(G)
     
 if __name__ == "__main__":
     main()
