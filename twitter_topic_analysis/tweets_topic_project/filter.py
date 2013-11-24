@@ -463,11 +463,111 @@ def gen_term_cv_vector():
     for edge in edge_list:
         term_cv_vector[edge[0]][term_index_dic[edge[1]]] = edge[2]
     
+    delete_list = []
+    
     for term in term_cv_vector:
         term_cv_vector[term][term_index_dic[term]] = max(term_cv_vector[term])
+        if max(term_cv_vector[term]) == 0:
+            delete_list.append(term)
+            
+    for term in delete_list:
+        term_cv_vector.pop(term)
+    
+    node_list_newer = []
+    for term in term_cv_vector:
+        node_list_newer.append(term)
+    f = open("../results/node_list_09_603.txt", "w")
+    count = 0
+    for term in node_list_newer:
+        f.write(term+" "+str(count)+"\n")
+        count += 1
+    f.close()
+    print len
+    
+    term_cv_vector_newer = {}
+    for node in node_list_newer:
+        term_index_dic.update({node:count})
+        term_cv_vector_newer.update({node:[0]*len(node_list_newer)})
+        count+=1
+    
+    for edge in edge_list:
+        term_cv_vector_newer[edge[0]][term_index_dic[edge[1]]] = edge[2]
+    
+    for term in term_cv_vector_newer:
+        maximum = max(term_cv_vector_newer[term])
+        if maximum != 0:
+            for i in range(len(term_cv_vector_newer[term])):
+                #term_cv_vector[term][i] = term_cv_vector[term][i]/maximum
+                if term_cv_vector_newer[term][i] != 0:
+                    term_cv_vector_newer[term][i] = 1
+                print len(term_cv_vector_newer[term])
         
-    f = open("../term_graph/term_CV_vectors.json","w")
+    f = open("../term_graph/term_CV_vectors_normalized_no0_all1_reduced.json","w")
     json.dump(term_cv_vector, f)
     f.close()
 
-gen_term_cv_vector()
+#gen_term_cv_vector()
+def reduce_graph():
+    node_list_603 = {}
+    term_cv_vector = {}
+    f = open("../results/node_list_09_603.txt", "r")
+    count = 0
+    for line in f:
+        data = line.split()
+        node_list_603.update({data[0] : count})
+        term_cv_vector.update({data[0] : [0]*603})
+        count += 1
+    f.close()
+    print len(node_list_603)
+    #print node_list_603
+    #print term_cv_vector
+    
+    #term_cv_vector = {} # term_cv_vectors
+    f = open("../term_graph/term_graph_09_1633_truncated.txt", "r")
+    flag = 0
+    node_list = []
+    edge_list = []
+    for line in f:
+        if flag == 1 and not line.startswith("#"):
+            try:
+                data = line.split()
+                node_list.append(data[0])
+            except:
+                pass
+        elif flag == 2 and not line.startswith("#"):
+            try:
+                edge = line.split(" ")
+                edge_list.append([edge[0], edge[1], float(edge[2])])
+            except:
+                pass
+        if line.startswith("#terms"):
+            flag = 1
+        elif line.startswith("#edges"):
+            flag = 2
+    # delete edges
+    edge_list_new = []
+    for i in range(len(edge_list)):
+        if edge_list[i][0] not in node_list_603 or edge_list[i][1] not in node_list_603:
+            pass
+        else:
+            edge_list_new.append(edge_list[i])
+    print len(edge_list_new)
+    
+    for edge in edge_list_new:
+        #print edge[0], edge[1]
+        term_cv_vector[edge[0]][node_list_603[edge[1]]] = edge[2]
+        term_cv_vector[edge[1]][node_list_603[edge[0]]] = edge[2]
+    """
+    for term in term_cv_vector:
+        for i in range(len(term_cv_vector[term])):
+            if term_cv_vector[term][i] > 0:
+                term_cv_vector[term][i] = 1
+    """
+    f = open("../term_graph/term_CV_vectors_reduced_603_bidirectional.json","w")
+    json.dump(term_cv_vector, f)
+    f.close()
+    
+reduce_graph()
+    
+    
+    

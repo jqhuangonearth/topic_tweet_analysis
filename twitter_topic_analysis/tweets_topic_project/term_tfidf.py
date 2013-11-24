@@ -100,6 +100,12 @@ class tfidf:
                     f.write("\n")
                 f.close()
                 term_tfidf = []
+        f = open("../term_dic/term_tfidf.json", "a") # add the last part of the terms
+        for term in term_tfidf:
+            json.dump(term, f)
+            f.write("\n")
+        f.close()
+        
     
     def read_term_dic(self, filename):
         f = open(filename, "r")
